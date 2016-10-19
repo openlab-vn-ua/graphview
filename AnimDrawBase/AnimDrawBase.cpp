@@ -16,6 +16,122 @@ void rotate(int x, int y, double angle,
   new_y = ref_point_y + x0*sinA + y0*cosA;
 }
 
+void drawDashLine(OLED *screen, int x1, int y1, int x2, int y2, uint16_t draw_num, uint8_t no_draw_num)
+{
+  int tmp;
+  double delta, tx, ty;
+  double m, b, dx, dy;
+  uint16_t draw_count = 0, no_draw_count = 0;
+	
+  if (((x2-x1)<0))
+  {
+    tmp=x1;	x1=x2; x2=tmp;
+    tmp=y1; y1=y2; y2=tmp;
+  }
+  
+  if (((y2-y1)<0))
+  {
+    tmp=x1; x1=x2; x2=tmp;
+    tmp=y1; y1=y2; y2=tmp;
+  }
+
+  if (abs(x2-x1)>abs(y2-y1))
+  {
+    delta=(double(y2-y1)/double(x2-x1));
+    ty=double(y1);
+    if (x1>x2)
+    {
+      for (int i=x1; i>=x2; i--)
+      {
+        if(draw_count < draw_num)
+        {
+          screen->setPixel(i, int(ty+0.5));
+          ++draw_count;
+        }        
+        else if(draw_count >= draw_num && no_draw_count < no_draw_num)
+        {
+          ++no_draw_count;
+          if(no_draw_count == no_draw_num)
+          {
+            draw_count = 0;
+            no_draw_count = 0;
+          }
+        }
+        
+        ty=ty-delta;
+      }
+    }
+    else
+    {
+      for (int i=x1; i<=x2; i++)
+      {
+        if(draw_count < draw_num)
+        {
+          screen->setPixel(i, int(ty+0.5));
+          ++draw_count;
+        }        
+        else if(draw_count >= draw_num && no_draw_count < no_draw_num)
+        {
+          ++no_draw_count;
+          if(no_draw_count == no_draw_num)
+          {
+            draw_count = 0;
+            no_draw_count = 0;
+          }
+        }
+        ty=ty+delta;
+      }
+    }
+  }
+  else
+  {
+    delta=(float(x2-x1)/float(y2-y1));
+    tx=float(x1);
+    if (y1>y2)
+    {
+      for (int i=y2+1; i>y1; i--)
+      {
+        if(draw_count < draw_num)
+        {
+          screen->setPixel(int(tx+0.5), i);
+          ++draw_count;
+        }        
+        else if(draw_count >= draw_num && no_draw_count < no_draw_num)
+        {
+          ++no_draw_count;
+          if(no_draw_count == no_draw_num)
+          {
+            draw_count = 0;
+            no_draw_count = 0;
+          }
+        }
+        tx=tx+delta;
+      }
+    }
+    else
+    {
+      for (int i=y1; i<y2+1; i++)
+      {
+        if(draw_count < draw_num)
+        {
+          screen->setPixel(int(tx+0.5), i);
+          ++draw_count;
+        }        
+        else if(draw_count >= draw_num && no_draw_count < no_draw_num)
+        {
+          ++no_draw_count;
+          if(no_draw_count == no_draw_num)
+          {
+            draw_count = 0;
+            no_draw_count = 0;
+          }
+        }
+        tx=tx+delta;
+      }
+    }
+  }
+}
+
 //-------------------------------------------
 
 AnimDrawBase::AnimDrawBase(): canvas(NULL)
@@ -300,13 +416,13 @@ void LoadingWheel::drawStick(int x1, int y1, int x2, int y2,
 
   if(stick_numb == tail_stick && command != 0)
   {
-    screen->drawDashLine(x1, y1, x2, y2, 1, 3);
+    drawDashLine(screen, x1, y1, x2, y2, 1, 3);
   }
   else if(((tail_stick == (this->stick_numb - 1) && stick_numb == 0) ||
            (tail_stick != (this->stick_numb - 1) && stick_numb == (tail_stick + 1)))
           && command != 0 )
   {
-    screen->drawDashLine(x1, y1, x2, y2, 1, 2);
+    drawDashLine(screen, x1, y1, x2, y2, 1, 2);
   }
   else
   {
